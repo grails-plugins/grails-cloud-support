@@ -20,6 +20,10 @@ class CloudSupportGrailsPlugin {
 	String title = 'Cloud Support Plugin'
 	String description = 'Cloud Support Plugin'
 	String documentation = 'http://grails.org/plugin/cloud-support'
+	List pluginExcludes = [
+		'docs/**',
+		'src/docs/**'
+	]
 
 	String license = 'APACHE'
 	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']

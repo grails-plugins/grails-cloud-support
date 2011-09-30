@@ -1,0 +1,26 @@
+h4. The first step is to install the plugin:
+
+{code}
+grails install-plugin cloud-support
+{code}
+
+The plugin provides two abstract base classes to help with configuring beans with connect information from the cloud environment. The first is @AbstractCloudBeanPostprocessor@. Subclass it in your project and implement the required methods (returning @null@ from data methods where the service isn't supported or allocated). Then register it in your plugin's @doWithSpring@ callback, e.g.
+
+{code}
+def doWithSpring = {
+   myCloudBeanPostprocessor(MyCloudBeanPostprocessor)
+}
+{code}
+
+The other is an abstract base class that configures Mongo (this can't be done in a bean post-processor, so it's done in @doWithSpring@). Like the @AbstractCloudBeanPostprocessor@ subclass it mostly requires that you implement a method returning Mongo connect information. It doesn't need to be registered as a bean, but it should be invoked in @doWithSpring@, e.g.
+
+{code}
+def doWithSpring = {
+   myCloudBeanPostprocessor(MyCloudBeanPostprocessor)
+
+   if (isCloudIsActive()) {
+      new MyMongoBeanConfigurer().fixMongo(application)
+   }
+}
+{code}
+

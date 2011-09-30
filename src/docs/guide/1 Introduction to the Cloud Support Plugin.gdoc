@@ -1,0 +1,3 @@
+The Cloud Support plugin contains an abstract bean postprocessor base class that detects if any of Hibernate, Mongo, Redis, RabbitMQ, Searchable, and Memcached are installed and reconfigures them to connect to the cloud-provided services. Since gathering the connect information is cloud-specific, this is abstracted into methods that must be implemented in a concrete class.
+
+This plugin isn't likely to be useful in general by itself, but rather as a dependency of other cloud plugins such as the Cloud Foundry plugin.
