@@ -14,6 +14,7 @@
  */
 package grails.plugin.cloudsupport
 
+import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
@@ -24,10 +25,13 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
  */
 abstract class AbstractMongoBeanConfigurer {
 
+	protected Logger log = Logger.getLogger(getClass())
+
 	void fixMongo(GrailsApplication application) {
 
 		def updatedValues = findMongoValues(application)
 		if (!updatedValues) {
+			log.debug 'Not updating Mongo'
 			return
 		}
 
@@ -38,7 +42,7 @@ abstract class AbstractMongoBeanConfigurer {
 		conf.password = updatedValues.password
 		conf.username = updatedValues.userName
 
-		println "Updated Mongo from $updatedValues"
+		log.debug "Updated Mongo from $updatedValues"
 	}
 
 	/**

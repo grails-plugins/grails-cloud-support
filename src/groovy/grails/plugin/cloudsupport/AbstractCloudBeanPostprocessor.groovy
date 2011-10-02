@@ -72,6 +72,12 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 				if (beanFactory.parentBeanFactory.getBean('pluginManager').hasGrailsPlugin('memcached')) {
 					fixMemcached beanFactory, appConfig
 				}
+				else {
+					log.debug 'Memcached not detected'
+				}
+			}
+			else {
+				log.debug 'No DataSource detected'
 			}
 		}
 		catch (Throwable e) {
@@ -82,6 +88,9 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 			if (beanFactory.containsBean('rabbitMQConnectionFactory')) {
 				fixRabbit beanFactory, appConfig
 			}
+			else {
+				log.debug 'RabbitMQ not detected'
+			}
 		}
 		catch (Throwable e) {
 			handleError e, 'Problem updating Rabbit'
@@ -90,6 +99,9 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		try {
 			if (beanFactory.containsBean('mongo')) {
 				fixMongo beanFactory, appConfig
+			}
+			else {
+				log.debug 'Mongo not detected'
 			}
 		}
 		catch (Throwable e) {
@@ -100,6 +112,9 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 			if (beanFactory.containsBean('compass')) {
 				fixCompass beanFactory, appConfig
 			}
+			else {
+				log.debug 'Searchable plugin not detected'
+			}
 		}
 		catch (Throwable e) {
 			handleError e, 'Problem updating Searchable'
@@ -108,6 +123,9 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		try {
 			if (beanFactory.containsBean('redisDatastore')) {
 				fixRedis beanFactory, appConfig
+			}
+			else {
+				log.debug 'Redis not detected'
 			}
 		}
 		catch (Throwable e) {
@@ -134,6 +152,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 
 		def updatedValues = findDataSourceValues(beanFactory, appConfig)
 		if (!updatedValues) {
+			log.debug 'Not updating DataSource'
 			return
 		}
 
@@ -216,6 +235,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 
 		def updatedValues = findRedisValues(beanFactory, appConfig)
 		if (!updatedValues) {
+			log.debug 'Not updating Redis'
 			return
 		}
 
@@ -267,6 +287,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 
 		def updatedValues = findRabbitValues(beanFactory, appConfig)
 		if (!updatedValues) {
+			log.debug 'Not updating RabbitMQ'
 			return
 		}
 
@@ -341,6 +362,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 
 		def updatedValues = findMemcachedValues(beanFactory, appConfig)
 		if (!updatedValues) {
+			log.debug 'Not updating Memcached'
 			return
 		}
 
