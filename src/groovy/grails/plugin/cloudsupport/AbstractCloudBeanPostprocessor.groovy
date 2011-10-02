@@ -17,7 +17,6 @@ package grails.plugin.cloudsupport
 import grails.util.GrailsUtil
 
 import org.apache.log4j.Logger
-import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
@@ -354,7 +353,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 	protected abstract String getCompassIndexRootLocation(ConfigObject appConfig)
 
 	/**
-	 * Update Memcached with connect info.
+	 * Update the config with Memcached data so the memcached plugin can update the provider.
 	 * @param beanFactory the Spring bean factory
 	 * @param appConfig the application config
 	 */
@@ -366,21 +365,11 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 			return
 		}
 
-		BeanDefinition beanDefinition = beanFactory.getBeanDefinition('hibernateProperties')
-		PropertyValue propertyValue = beanDefinition.getPropertyValues().getPropertyValue('properties')
-		Map properties = propertyValue.getValue()
+		appConfig.grails.plugin.memcached.hosts = updatedValues.host
+		appConfig.grails.plugin.memcached.username = updatedValues.userName
+		appConfig.grails.plugin.memcached.password = updatedValues.password
 
-		String server = updatedValues.host
-		if (!server.contains(':')) {
-			server += ':11211'
-		}
-		properties['hibernate.memcached.servers'] = server
-		properties['hibernate.memcached.username'] = updatedValues.userName
-		properties['hibernate.memcached.password'] = updatedValues.password
-		properties['hibernate.cache.provider_class'] = 'com.googlecode.hibernate.memcached.MemcachedCacheProvider'
-		properties['hibernate.memcached.connectionFactory'] = 'BinaryConnectionFactory'
-
-		log.debug "Updated Memcached from $updatedValues"
+		log.debug "Updated grails.plugin.memcached config from $updatedValues"
 	}
 
 	/**
