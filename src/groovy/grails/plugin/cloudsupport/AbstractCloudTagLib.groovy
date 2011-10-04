@@ -19,7 +19,6 @@ package grails.plugin.cloudsupport
  */
 abstract class AbstractCloudTagLib {
 
-	def grailsApplication
 	def pluginManager
 
 	/**
