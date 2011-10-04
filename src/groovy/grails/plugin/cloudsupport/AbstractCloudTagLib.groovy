@@ -17,7 +17,7 @@ package grails.plugin.cloudsupport
 /**
  * @author Burt Beckwith
  */
-abstract class AbstractTagLib {
+abstract class AbstractCloudTagLib {
 
 	def grailsApplication
 	def pluginManager
@@ -28,7 +28,7 @@ abstract class AbstractTagLib {
 	 * @attr name if specified the link will be for that service, otherwise the first JDBC service will be used
 	 * @attr consolePath optional - the root of the uri to the console; usually not necessary but useful if you have a url mapping
 	 */
-	def dbconsoleLink = { attrs, body ->
+	Closure dbconsoleLink = { attrs, body ->
 
 		String name = attrs.name ?: null
 		def connectInfo = findDbConnectInfo(name)
@@ -44,7 +44,7 @@ abstract class AbstractTagLib {
 
 		String dbDriver = URLEncoder.encode(connectInfo.driver, 'UTF-8')
 		String dbUrl = URLEncoder.encode(connectInfo.url, 'UTF-8')
-		String dbUser = URLEncoder.encode(connectInfo.user, 'UTF-8')
+		String dbUser = URLEncoder.encode(connectInfo.userName, 'UTF-8')
 		String dbPassword = URLEncoder.encode(connectInfo.password, 'UTF-8')
 
 		String consolePath
