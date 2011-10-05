@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 class CloudSupportGrailsPlugin {
-	String version = '1.0.5'
+	String version = '1.0.6'
 	String grailsVersion = '1.3.3 > *'
 	String author = 'Burt Beckwith'
 	String authorEmail = 'beckwithb@vmware.com'
