@@ -29,4 +29,10 @@ class CloudSupportGrailsPlugin {
 	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPCLOUDSUPPORT']
 	def scm = [url: 'https://github.com/grails-plugins/grails-cloud-support']
+
+	def doWithApplicationContext = { ctx ->
+		if (ctx.containsBean('redisDatastore')) {
+			ctx.redisDatastore.applicationContext = ctx
+		}
+	}
 }
