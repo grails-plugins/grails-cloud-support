@@ -120,7 +120,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		}
 
 		try {
-			if (beanFactory.containsBean('redisDatastore')) {
+			if (beanFactory.containsBean('redisDatastore') || beanFactory.containsBean('redisPool')) {
 				fixRedis beanFactory, appConfig
 			}
 			else {
@@ -240,27 +240,52 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 
 		def groovyClassLoader = new GroovyClassLoader(getClass().classLoader)
 
-		def clazz
-		try {
-			clazz = groovyClassLoader.loadClass('org.grails.plugins.redis.RedisDatastoreFactoryBean')
-		}
-		catch (ClassNotFoundException e) {
-			clazz = groovyClassLoader.loadClass('org.grails.datastore.gorm.redis.bean.factory.RedisDatastoreFactoryBean')
-		}
-
-		def bean = clazz.newInstance()
-		bean.mappingContext = beanFactory.getBean('redisDatastoreMappingContext')
-		bean.pluginManager = beanFactory.getBean('pluginManager')
-
 		def newConfig = [:]
-		def config = appConfig.grails.redis
+		def config = appConfig.grails.redis ?: [:]
 		config.each { key, value -> newConfig[key] = value?.toString() }
 		newConfig.host = updatedValues.host
 		newConfig.password = updatedValues.password
 		newConfig.port = updatedValues.port.toString()
-		bean.config = newConfig
 
-		beanFactory.registerSingleton 'redisDatastore', bean
+		if (beanFactory.containsBeanDefinition('redisDatastore')) {
+			def clazz
+			try {
+				clazz = groovyClassLoader.loadClass('org.grails.plugins.redis.RedisDatastoreFactoryBean')
+			}
+			catch (ClassNotFoundException e) {
+				clazz = groovyClassLoader.loadClass('org.grails.datastore.gorm.redis.bean.factory.RedisDatastoreFactoryBean')
+			}
+
+			def bean = clazz.newInstance()
+			bean.mappingContext = beanFactory.getBean('redisDatastoreMappingContext')
+			bean.pluginManager = beanFactory.getBean('pluginManager')
+			bean.config = newConfig
+
+			beanFactory.registerSingleton 'redisDatastore', bean
+		}
+
+		if (beanFactory.containsBeanDefinition('redisPool')) {
+			log.debug "Updating 'redisPool' bean with values $updatedValues"
+			try {
+				Class<?> protocolClass = groovyClassLoader.loadClass('redis.clients.jedis.Protocol')
+				String host = newConfig.host ?: 'localhost'
+				int port = newConfig.port ? Integer.valueOf(newConfig.port): protocolClass.DEFAULT_PORT // 6379
+				int timeout = config.timeout ?: protocolClass.DEFAULT_TIMEOUT // 2000
+				String password = newConfig.password ?: null
+
+				def poolClass = groovyClassLoader.loadClass('redis.clients.jedis.JedisPool')
+				def poolConfig = beanFactory.getBean("redisPoolConfig")
+				def redisPoolBean = poolClass.newInstance(poolConfig, host, port, timeout, password)
+				beanFactory.registerSingleton 'redisPool', redisPoolBean
+			}
+			catch (ClassNotFoundException ignored) {
+				// ignored
+			}
+		}
+		else {
+			log.debug "No redisPool bean found to update"
+		}
+
 		log.debug "Updated Redis from $updatedValues"
 	}
 

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 class CloudSupportGrailsPlugin {
-	String version = '1.0.5'
+	String version = '1.0.6'
 	String grailsVersion = '1.3.3 > *'
 	String author = 'Burt Beckwith'
 	String authorEmail = 'beckwithb@vmware.com'
@@ -29,4 +29,10 @@ class CloudSupportGrailsPlugin {
 	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPCLOUDSUPPORT']
 	def scm = [url: 'https://github.com/grails-plugins/grails-cloud-support']
+
+	def doWithApplicationContext = { ctx ->
+		if (ctx.containsBean('redisDatastore')) {
+			ctx.redisDatastore.applicationContext = ctx
+		}
+	}
 }
