@@ -17,9 +17,13 @@ package grails.plugin.cloudsupport
 import grails.util.GrailsUtil
 
 import org.apache.log4j.Logger
+import org.springframework.beans.MutablePropertyValues
+import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+import org.springframework.beans.factory.config.ConstructorArgumentValues
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
+import org.springframework.beans.factory.support.GenericBeanDefinition
 import org.springframework.core.Ordered
 
 /**
@@ -30,6 +34,11 @@ import org.springframework.core.Ordered
 abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryPostProcessor, Ordered {
 
 	protected Logger log = Logger.getLogger(getClass())
+
+	static final String DEFAULT_POSTGRES_DRIVER  = 'org.postgresql.Driver'
+	static final String DEFAULT_MYSQL_DRIVER     = 'com.mysql.jdbc.Driver'
+	static final String DEFAULT_POSTGRES_DIALECT = 'org.hibernate.dialect.PostgreSQLDialect'
+	static final String DEFAULT_MYSQL_DIALECT    = 'org.hibernate.dialect.MySQL5InnoDBDialect'
 
 	int getOrder() { 100 }
 
@@ -163,6 +172,31 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 			suffix = configUrl.substring(configUrl.indexOf('?'))
 		}
 
+		if (appConfig.dataSource.dialect) {
+			log.debug "Not configuring Hibernate Dialect since it's specified as $appConfig.dataSource.dialect"
+		}
+		else {
+			if (beanFactory.containsBeanDefinition('dialectDetector')) {
+				BeanDefinition dialectDetector = beanFactory.getBeanDefinition('dialectDetector')
+				if (dialectDetector instanceof GenericBeanDefinition) {
+					GenericBeanDefinition beanDef = (GenericBeanDefinition)dialectDetector
+					beanDef.setBeanClassName(String.name)
+					ConstructorArgumentValues constructorArgValues = new ConstructorArgumentValues()
+					constructorArgValues.addGenericArgumentValue(updatedValues.dialectClassName)
+					beanDef.setConstructorArgumentValues(constructorArgValues)
+					beanDef.setPropertyValues(new MutablePropertyValues())
+					log.warn "Configured Hibernate Dialect '$updatedValues.dialectClassName'"
+				}
+				else {
+					log.warn "'dialectDetector' bean definition isn't a GenericBeanDefinition - not reconfiguring it"
+				}
+			}
+			else {
+				// could configure a bean, but this shouldn't happen
+				log.warn "Hibernate Dialect isn't specified but there's no 'dialectDetector' bean configured"
+			}
+		}
+
 		dataSourceBean.driverClassName = updatedValues.driverClassName
 		dataSourceBean.url = updatedValues.url + suffix
 		dataSourceBean.username = updatedValues.userName
@@ -185,6 +219,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 	 * Return updated DataSource connect info. Return an empty or null map to indicate that
 	 * no processing should be done. Values should include:
 	 * 	driverClassName
+	 * 	dialectClassName
 	 * 	url
 	 * 	userName
 	 * 	password
