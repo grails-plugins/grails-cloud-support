@@ -24,11 +24,20 @@ class CloudSupportGrailsPlugin {
 		'docs/**',
 		'src/docs/**'
 	]
+	def loadBefore = ['rabbitmq']
 
 	String license = 'APACHE'
 	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPCLOUDSUPPORT']
 	def scm = [url: 'https://github.com/grails-plugins/grails-cloud-support']
+
+	def doWithSpring = {
+		// set dummy values so the plugin configures itself;
+		// the bean post-processor will set the real values
+		application.config.rabbitmq.connectionfactory.hostname = 'placeholder'
+		application.config.rabbitmq.connectionfactory.username = 'placeholder'
+		application.config.rabbitmq.connectionfactory.password = 'placeholder'
+	}
 
 	def doWithApplicationContext = { ctx ->
 		if (ctx.containsBean('redisDatastore')) {
