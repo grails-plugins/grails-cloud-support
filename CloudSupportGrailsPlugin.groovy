@@ -12,8 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import grails.util.Metadata
+
 class CloudSupportGrailsPlugin {
-	String version = '1.0.6'
+	String version = '1.0.8'
 	String grailsVersion = '1.3.3 > *'
 	String author = 'Burt Beckwith'
 	String authorEmail = 'beckwithb@vmware.com'
@@ -24,11 +27,20 @@ class CloudSupportGrailsPlugin {
 		'docs/**',
 		'src/docs/**'
 	]
+	def loadBefore = Metadata.current.getGrailsVersion().startsWith('1') ? [] : ['rabbitmq']
 
 	String license = 'APACHE'
 	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPCLOUDSUPPORT']
 	def scm = [url: 'https://github.com/grails-plugins/grails-cloud-support']
+
+	def doWithSpring = {
+		// set dummy values so the plugin configures itself; the bean post-processor will set the real values.
+		// this only works in 2.0+ since there's a bug in loadBefore handling if the plugin isn't installed
+		application.config.rabbitmq.connectionfactory.hostname = 'placeholder'
+		application.config.rabbitmq.connectionfactory.username = 'placeholder'
+		application.config.rabbitmq.connectionfactory.password = 'placeholder'
+	}
 
 	def doWithApplicationContext = { ctx ->
 		if (ctx.containsBean('redisDatastore')) {
