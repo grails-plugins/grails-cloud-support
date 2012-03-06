@@ -37,9 +37,12 @@ class CloudSupportGrailsPlugin {
 	def doWithSpring = {
 		// set dummy values so the plugin configures itself; the bean post-processor will set the real values.
 		// this only works in 2.0+ since there's a bug in loadBefore handling if the plugin isn't installed
-		application.config.rabbitmq.connectionfactory.hostname = 'placeholder'
-		application.config.rabbitmq.connectionfactory.username = 'placeholder'
-		application.config.rabbitmq.connectionfactory.password = 'placeholder'
+		def config = application.config.rabbitmq.connectionfactory
+		if (!config) {
+			config.hostname = 'placeholder'
+			config.username = 'placeholder'
+			config.password = 'placeholder'
+		}
 	}
 
 	def doWithApplicationContext = { ctx ->
