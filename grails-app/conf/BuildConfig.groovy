@@ -7,17 +7,6 @@ grails.project.dependency.resolution = {
 	log 'warn'
 
 	repositories {
-		grailsPlugins()
-		grailsHome()
 		grailsCentral()
 	}
-
-	dependencies {}
-
-	plugins {
-		build(':release:1.0.0') {
-			export = false
-		}
-	}
 }
-
