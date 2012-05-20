@@ -40,7 +40,9 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 	static final String DEFAULT_POSTGRES_DIALECT = 'org.hibernate.dialect.PostgreSQLDialect'
 	static final String DEFAULT_MYSQL_DIALECT    = 'org.hibernate.dialect.MySQL5InnoDBDialect'
 
-	int getOrder() { 100 }
+	int getOrder() {
+		100
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -129,7 +131,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		}
 
 		try {
-			if (beanFactory.containsBean('redisDatastore') || beanFactory.containsBean('redisPool')) {
+			if (beanFactory.containsBean('redisDatastore') || beanFactory.containsBean('redisPool') || beanFactory.containsBean("grailsCacheJedisConnectionFactory")) {
 				fixRedis beanFactory, appConfig
 			}
 			else {
@@ -156,7 +158,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 	 * @param appConfig the application config
 	 */
 	protected void fixDataSource(ConfigurableListableBeanFactory beanFactory,
-			dataSourceBean, ConfigObject appConfig) {
+	dataSourceBean, ConfigObject appConfig) {
 
 		def updatedValues = findDataSourceValues(beanFactory, appConfig)
 		if (!updatedValues) {
@@ -228,7 +230,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 	 * @return the data
 	 */
 	protected abstract Map findDataSourceValues(ConfigurableListableBeanFactory beanFactory,
-			ConfigObject appConfig)
+	ConfigObject appConfig)
 
 	/**
 	 * Update the DataSource with params to do connection timeout checks.
@@ -320,6 +322,16 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		else {
 			log.debug "No redisPool bean found to update"
 		}
+		//in case we are using the cache-redis plugin, there will be no redisPool bean
+		//instead we update the JedisShardInfo bean
+		if(beanFactory.containsBean("grailsCacheJedisConnectionFactory")){
+			def redisFactory = beanFactory.getBean("grailsCacheJedisShardInfo")
+			redisFactory.host = host
+			redisFactory.port = port
+			redisFactory.password = password
+			redisFactory.timeout = timeout
+			log.debug "Updated grailsCacheJedisShardInfo from $updatedValues"
+		}
 
 		log.debug "Updated Redis from $updatedValues"
 	}
@@ -335,7 +347,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 	 * @return the data
 	 */
 	protected abstract Map findRedisValues(ConfigurableListableBeanFactory beanFactory,
-			ConfigObject appConfig)
+	ConfigObject appConfig)
 
 	/**
 	 * Update Rabbit with connect info.
@@ -381,7 +393,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 	 * @return the data
 	 */
 	protected abstract Map findRabbitValues(ConfigurableListableBeanFactory beanFactory,
-			ConfigObject appConfig)
+	ConfigObject appConfig)
 
 	/**
 	 * Update Mongo with connect info.
@@ -443,7 +455,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 	 * @return the data
 	 */
 	protected abstract Map findMemcachedValues(ConfigurableListableBeanFactory beanFactory,
-			ConfigObject appConfig)
+	ConfigObject appConfig)
 
 	protected void handleError(Throwable t, String prefix) {
 		GrailsUtil.deepSanitize t
