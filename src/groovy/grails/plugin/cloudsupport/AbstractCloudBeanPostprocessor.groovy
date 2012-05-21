@@ -129,7 +129,9 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		}
 
 		try {
-			if (beanFactory.containsBean('redisDatastore') || beanFactory.containsBean('redisPool') || beanFactory.containsBean("grailsCacheJedisConnectionFactory")) {
+			if (beanFactory.containsBean('redisDatastore') ||
+			    beanFactory.containsBean('redisPool') ||
+			    beanFactory.containsBean('grailsCacheJedisConnectionFactory')) {
 				fixRedis beanFactory, appConfig
 			}
 			else {
@@ -242,7 +244,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		}
 
 		if (!shouldConfigureDatasourceTimeout(appConfig)) {
-			log.debug "Not configuring DataSource connection checking, disabled"
+			log.debug 'Not configuring DataSource connection checking, disabled'
 			return
 		}
 
@@ -250,7 +252,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		dataSourceBean.removeAbandonedTimeout = 300 // 5 minutes
 		dataSourceBean.testOnBorrow = true
 		dataSourceBean.validationQuery = '/* ping */ SELECT 1'
-		log.debug "Configured DataSource connection checking"
+		log.debug 'Configured DataSource connection checking'
 	}
 
 	/**
@@ -309,7 +311,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 				String password = newConfig.password ?: null
 
 				def poolClass = groovyClassLoader.loadClass('redis.clients.jedis.JedisPool')
-				def poolConfig = beanFactory.getBean("redisPoolConfig")
+				def poolConfig = beanFactory.getBean('redisPoolConfig')
 				def redisPoolBean = poolClass.newInstance(poolConfig, host, port, timeout, password)
 				beanFactory.registerSingleton 'redisPool', redisPoolBean
 			}
@@ -318,12 +320,13 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 			}
 		}
 		else {
-			log.debug "No redisPool bean found to update"
+			log.debug 'No redisPool bean found to update'
 		}
-		//in case we are using the cache-redis plugin, there will be no redisPool bean
-		//instead we update the JedisShardInfo bean
-		if(beanFactory.containsBean("grailsCacheJedisConnectionFactory")){
-			def redisFactory = beanFactory.getBean("grailsCacheJedisShardInfo")
+
+		// in case we are using the cache-redis plugin, there will be no redisPool bean;
+		// instead we update the JedisShardInfo bean
+		if (beanFactory.containsBean('grailsCacheJedisConnectionFactory')) {
+			def redisFactory = beanFactory.getBean('grailsCacheJedisShardInfo')
 			redisFactory.host = host
 			redisFactory.port = port
 			redisFactory.password = password
