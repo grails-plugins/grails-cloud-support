@@ -129,7 +129,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		}
 
 		try {
-			if (beanFactory.containsBean('redisDatastore') || beanFactory.containsBean('redisPool')) {
+			if (beanFactory.containsBean('redisDatastore') || beanFactory.containsBean('redisPool') || beanFactory.containsBean("grailsCacheJedisConnectionFactory")) {
 				fixRedis beanFactory, appConfig
 			}
 			else {
@@ -319,6 +319,16 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		}
 		else {
 			log.debug "No redisPool bean found to update"
+		}
+		//in case we are using the cache-redis plugin, there will be no redisPool bean
+		//instead we update the JedisShardInfo bean
+		if(beanFactory.containsBean("grailsCacheJedisConnectionFactory")){
+			def redisFactory = beanFactory.getBean("grailsCacheJedisShardInfo")
+			redisFactory.host = host
+			redisFactory.port = port
+			redisFactory.password = password
+			redisFactory.timeout = timeout
+			log.debug "Updated grailsCacheJedisShardInfo from $updatedValues"
 		}
 
 		log.debug "Updated Redis from $updatedValues"
