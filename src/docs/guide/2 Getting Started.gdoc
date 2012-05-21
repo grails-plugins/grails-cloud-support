@@ -1,4 +1,12 @@
-h4. The first step is to install the plugin:
+h4. The first step is to install the plugin, either with a dependency in @BuildConfig.groovy@
+
+{code}
+plugins {
+   compile ':cloud-support:1.0.10'
+}
+{code}
+
+or with @install-plugin@
 
 {code}
 grails install-plugin cloud-support
@@ -23,4 +31,3 @@ def doWithSpring = {
    }
 }
 {code}
-
