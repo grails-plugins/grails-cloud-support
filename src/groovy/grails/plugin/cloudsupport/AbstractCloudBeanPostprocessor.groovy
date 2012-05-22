@@ -131,7 +131,7 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 		try {
 			if (beanFactory.containsBean('redisDatastore') ||
 			    beanFactory.containsBean('redisPool') ||
-			    beanFactory.containsBean('grailsCacheJedisConnectionFactory')) {
+			    beanFactory.containsBean('grailsCacheJedisShardInfo')) {
 				fixRedis beanFactory, appConfig
 			}
 			else {
@@ -301,40 +301,54 @@ abstract class AbstractCloudBeanPostprocessor implements BeanDefinitionRegistryP
 			beanFactory.registerSingleton 'redisDatastore', bean
 		}
 
-		if (beanFactory.containsBeanDefinition('redisPool')) {
-			log.debug "Updating 'redisPool' bean with values $updatedValues"
+		if (beanFactory.containsBean('grailsCacheJedisShardInfo') ||
+		    beanFactory.containsBeanDefinition('redisPool')) {
+
+			String host
+			Integer port
+			Integer timeout
+			String password
 			try {
 				Class<?> protocolClass = groovyClassLoader.loadClass('redis.clients.jedis.Protocol')
-				String host = newConfig.host ?: 'localhost'
-				int port = newConfig.port ? Integer.valueOf(newConfig.port): protocolClass.DEFAULT_PORT // 6379
-				int timeout = config.timeout ?: protocolClass.DEFAULT_TIMEOUT // 2000
-				String password = newConfig.password ?: null
-
-				def poolClass = groovyClassLoader.loadClass('redis.clients.jedis.JedisPool')
-				def poolConfig = beanFactory.getBean('redisPoolConfig')
-				def redisPoolBean = poolClass.newInstance(poolConfig, host, port, timeout, password)
-				beanFactory.registerSingleton 'redisPool', redisPoolBean
+				host = newConfig.host ?: 'localhost'
+				password = newConfig.password ?: null
+				port = newConfig.port ? Integer.valueOf(newConfig.port): protocolClass.DEFAULT_PORT // 6379
+				timeout = config.timeout ?: protocolClass.DEFAULT_TIMEOUT // 2000
 			}
-			catch (ClassNotFoundException ignored) {
-				// ignored
+			catch (ClassNotFoundException e) {
+				port = newConfig.port ? Integer.valueOf(newConfig.port): 6379
+				timeout = config.timeout ?: 2000
 			}
-		}
-		else {
-			log.debug 'No redisPool bean found to update'
-		}
 
-		// in case we are using the cache-redis plugin, there will be no redisPool bean;
-		// instead we update the JedisShardInfo bean
-		if (beanFactory.containsBean('grailsCacheJedisConnectionFactory')) {
-			def redisFactory = beanFactory.getBean('grailsCacheJedisShardInfo')
-			redisFactory.host = host
-			redisFactory.port = port
-			redisFactory.password = password
-			redisFactory.timeout = timeout
-			log.debug "Updated grailsCacheJedisShardInfo from $updatedValues"
-		}
+			if (beanFactory.containsBeanDefinition('redisPool')) {
+				log.debug "Updating 'redisPool' bean with values $updatedValues"
+				try {
+					def poolClass = groovyClassLoader.loadClass('redis.clients.jedis.JedisPool')
+					def poolConfig = beanFactory.getBean('redisPoolConfig')
+					def redisPoolBean = poolClass.newInstance(poolConfig, host, port, timeout, password)
+					beanFactory.registerSingleton 'redisPool', redisPoolBean
+				}
+				catch (ClassNotFoundException ignored) {
+					// ignored
+				}
+			}
+			else {
+				log.debug 'No redisPool bean found to update'
+			}
 
-		log.debug "Updated Redis from $updatedValues"
+			// in case we are using the cache-redis plugin, there will be no redisPool bean;
+			// instead we update the JedisShardInfo bean
+			if (beanFactory.containsBean('grailsCacheJedisShardInfo')) {
+				def redisFactory = beanFactory.getBean('grailsCacheJedisShardInfo')
+				redisFactory.host = host
+				redisFactory.port = port
+				redisFactory.password = password
+				redisFactory.timeout = timeout
+				log.debug "Updated grailsCacheJedisShardInfo from $updatedValues"
+			}
+
+			log.debug "Updated Redis from $updatedValues"
+		}
 	}
 
 	/**
