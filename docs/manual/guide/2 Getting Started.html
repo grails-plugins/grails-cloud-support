@@ -2,7 +2,7 @@
                       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>2 Getting Started 1.0.8</title>
+    <title>2 Getting Started 1.0.11</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link rel="stylesheet" href="../css/main.css" type="text/css" media="screen, print" title="Style" charset="utf-8"/>
     <link rel="stylesheet" href="../css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8"/>
@@ -66,7 +66,7 @@ function addJsClass() {
 
                     <p><strong>Authors:</strong> Burt Beckwith</p>
 
-                    <p><strong>Version:</strong> 1.0.8</p>
+                    <p><strong>Version:</strong> 1.0.11</p>
 
                     
                 </div>
@@ -76,13 +76,16 @@ function addJsClass() {
                 
 
 <h1 id="2 Getting Started">2 Getting Started</h1>
-<h4>The first step is to install the plugin:</h4><p class="paragraph"/><div class="code"><pre>grails install&#45;plugin cloud&#45;support</pre></div><p class="paragraph"/>The plugin provides two abstract base classes to help with configuring beans with connect information from the cloud environment. The first is <code>AbstractCloudBeanPostprocessor</code>. Subclass it in your project and implement the required methods (returning <code>null</code> from data methods where the service isn't supported or allocated). Then register it in your plugin's <code>doWithSpring</code> callback, e.g.<p class="paragraph"/><div class="code"><pre>def doWithSpring = &#123;
+<h4>The first step is to install the plugin, either with a dependency in <code>BuildConfig.groovy</code></h4><p class="paragraph"/><div class="code"><pre>plugins &#123;
+   compile ':cloud&#45;support:1.0.11'
+&#125;</pre></div><p class="paragraph"/>or with <code>install-plugin</code><p class="paragraph"/><div class="code"><pre>grails install&#45;plugin cloud&#45;support</pre></div><p class="paragraph"/>The plugin provides two abstract base classes to help with configuring beans with connect information from the cloud environment. The first is <code>AbstractCloudBeanPostprocessor</code>. Subclass it in your project and implement the required methods (returning <code>null</code> from data methods where the service isn't supported or allocated). Then register it in your plugin's <code>doWithSpring</code> callback, e.g.<p class="paragraph"/><div class="code"><pre>def doWithSpring = &#123;
    myCloudBeanPostprocessor(MyCloudBeanPostprocessor)
 &#125;</pre></div><p class="paragraph"/>The other is an abstract base class that configures Mongo (this can't be done in a bean post-processor, so it's done in <code>doWithSpring</code>). Like the <code>AbstractCloudBeanPostprocessor</code> subclass it mostly requires that you implement a method returning Mongo connect information. It doesn't need to be registered as a bean, but it should be invoked in <code>doWithSpring</code>, e.g.<p class="paragraph"/><div class="code"><pre>def doWithSpring = &#123;
    myCloudBeanPostprocessor(MyCloudBeanPostprocessor)<p class="paragraph"/>   <span class="java&#45;keyword">if</span> (isCloudIsActive()) &#123;
       <span class="java&#45;keyword">new</span> MyMongoBeanConfigurer().fixMongo(application)
    &#125;
-&#125;</pre></div><p class="paragraph"/>
+&#125;</pre></div>
+
 
 
                 <div style="clear:both;margin-top:15px;"></div>
