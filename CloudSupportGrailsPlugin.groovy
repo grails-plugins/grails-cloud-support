@@ -16,7 +16,7 @@
 import grails.util.Metadata
 
 class CloudSupportGrailsPlugin {
-	String version = '1.0.10'
+	String version = '1.0.11'
 	String grailsVersion = '1.3.3 > *'
 	String author = 'Burt Beckwith'
 	String authorEmail = 'beckwithb@vmware.com'
